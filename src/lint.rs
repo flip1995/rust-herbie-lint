@@ -118,18 +118,13 @@ impl LintPass for Herbie {
     }
 }
 
-impl LateLintPass for Herbie {
+impl<'a, 'tcx> LateLintPass<'a, 'tcx> for Herbie {
     fn check_expr(&mut self, cx: &LateContext, expr: &Expr) {
         fn is_herbie_ignore(attr: &Attribute) -> bool {
-            if let MetaItemKind::Word(ref word) = attr.node.value.node {
-                word == &"herbie_ignore"
-            }
-            else {
-                false
-            }
+            "herbie_ignore" == &*attr.value.name.as_str()
         }
 
-        let attrs = match cx.tcx.map.find(cx.tcx.map.get_parent(expr.id)) {
+        let attrs = match cx.access_levels.map.find(cx.access_levels.map.get_parent(expr.id)) {
             Some(Node::NodeItem(item)) => &item.attrs,
             Some(Node::NodeTraitItem(item)) => &item.attrs,
             Some(Node::NodeImplItem(item)) => &item.attrs,
@@ -140,7 +135,7 @@ impl LateLintPass for Herbie {
             return;
         }
 
-        let ty = cx.tcx.expr_ty(expr);
+        let ty = cx.tables.expr_ty(expr);
 
         if ty.sty != TypeVariants::TyFloat(FloatTy::F64) {
             return;

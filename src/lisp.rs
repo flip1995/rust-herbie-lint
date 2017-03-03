@@ -7,7 +7,7 @@ use std::collections::hash_map::Entry;
 use std::iter::FromIterator;
 use std;
 use syntax::ast::LitKind;
-use syntax::ast::{FloatTy, Name};
+use syntax::ast::{FloatTy, Name, QSelf};
 use syntax::codemap::{Span, Spanned};
 use utils::{merge_span, snippet};
 
@@ -109,7 +109,7 @@ impl LispExpr {
                     None
                 }
                 ExprField(ref expr, ref name) => {
-                    if let ExprPath(ref qualif, ref path) = expr.node {
+                    if let ExprPath(QPath::Resolved(ref qualif, ref path)) = expr.node {
                         if let Some(pos) = ids.iter().position(|item| {
                             if let MatchBinding::Field(ref bqualif, ref bpath, ref bname) = *item {
                                 bqualif == qualif
@@ -159,7 +159,7 @@ impl LispExpr {
                         None
                     }
                 }
-                ExprPath(ref qualif, ref path) => {
+                ExprPath(QPath::Resolved(ref qualif, ref path)) => {
                     if let Some(pos) = ids.iter().position(|item| {
                         if let MatchBinding::Ident(ref bqualif, ref bpath) = *item {
                             bqualif == qualif
@@ -177,7 +177,7 @@ impl LispExpr {
                     }
                 },
                 ExprTupField(ref tup, ref idx) => {
-                    if let ExprPath(ref qualif, ref path) = tup.node {
+                    if let ExprPath(QPath::Resolved(ref qualif, ref path)) = tup.node {
                         if let Some(pos) = ids.iter().position(|item| {
                             if let MatchBinding::TupField(ref bqualif, ref bpath, ref bidx) = *item {
                                 bqualif == qualif
@@ -260,7 +260,7 @@ impl LispExpr {
                         false
                     }
                 }
-                (&ExprPath(ref qualif, ref path), &LispExpr::Ident(rid)) => {
+                (&ExprPath(QPath::Resolved(ref qualif, ref path)), &LispExpr::Ident(rid)) => {
                     try_insert(rid, ids, |entry| {
                         if let MatchBinding::Ident(ref bqualif, ref bpath) = *entry {
                             qualif == bqualif
@@ -310,7 +310,7 @@ impl LispExpr {
                     lop == rop && match_expr_impl(lp, rp, ids)
                 }
                 (&ExprTupField(ref tup, ref idx), &LispExpr::Ident(rid)) => {
-                    if let ExprPath(ref qualif, ref path) = tup.node {
+                    if let ExprPath(QPath::Resolved(ref qualif, ref path)) = tup.node {
                         return try_insert(rid, ids, |entry| {
                             if let MatchBinding::TupField(ref bqualif, ref bpath, bidx) = *entry {
                                 qualif == bqualif
@@ -329,7 +329,7 @@ impl LispExpr {
                     bind_unknown(rid, lhs.span, ids)
                 }
                 (&ExprField(ref expr, ref name), &LispExpr::Ident(rid)) => {
-                    if let ExprPath(ref qualif, ref path) = expr.node {
+                    if let ExprPath(QPath::Resolved(ref qualif, ref path)) = expr.node {
                         return try_insert(rid, ids, |entry| {
                             if let MatchBinding::Field(ref bqualif, ref bpath, ref bname) = *entry {
                                 qualif == bqualif

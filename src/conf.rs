@@ -10,7 +10,7 @@ const DEFAULT_HERBIE_SEED: &'static str = "#(1461197085 2376054483 1553562171 16
 const DEFAULT_DB_PATH: &'static str = "Herbie.db";
 const DEFAULT_TIMEOUT: u32 = 120;
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug, Deserialize)]
 pub struct UxConf {
     /// Path to the database. Defaults to "Herbie.db".
     pub db_path: Option<String>,
@@ -108,7 +108,7 @@ pub fn read_conf() -> Result<Conf, ConfError> {
         let mut buffer = String::new();
         try!(conf.read_to_string(&mut buffer));
 
-        if let Some(conf) = toml::decode_str::<UxConf>(&buffer) {
+        if let Ok(conf) = toml::from_str::<UxConf>(&buffer) {
             Ok(conf.into())
         }
         else {

@@ -21,7 +21,8 @@ extern crate rusqlite;
 extern crate rustc;
 #[macro_use]
 extern crate rustc_plugin;
-extern crate rustc_serialize;
+#[macro_use]
+extern crate serde_derive;
 extern crate syntax;
 extern crate toml;
 extern crate wait_timeout;
